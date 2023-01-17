@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  receive:
+    image: receive:local
+    build:
+      context: ./receive
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./receive/:/code/
+  send:
+    image: send:local
+    build:
+      context: ./send
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./send/:/code/
+  rabbitmq:
+    image: rabbitmq:3-management
+    user: rabbitmq
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 1s
+      timeout: 3s
+      retries: 30
